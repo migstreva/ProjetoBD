@@ -1,0 +1,99 @@
+-- Tabelas principais
+
+CREATE TABLE customer (
+    id BINARY(16) NOT NULL,
+    city VARCHAR(255),
+    number VARCHAR(255),
+    state VARCHAR(255),
+    street VARCHAR(255),
+    zip VARCHAR(255),
+    date_of_birth DATE NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    occupation VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE checking_account (
+    id BINARY(16) NOT NULL,
+    account_number BIGINT NOT NULL,
+    balance DECIMAL(38,2),
+    bank_branch INTEGER NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    is_active BIT NOT NULL,
+    customer_id BINARY(16) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE customer_document (
+    id BINARY(16) NOT NULL,
+    doc_number VARCHAR(50) NOT NULL,
+    doc_type ENUM('CNPJ','CPF','DRIVER_LICENSE','PASSPORT') NOT NULL,
+    customer_id BINARY(16) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE investment_account (
+    id BINARY(16) NOT NULL,
+    balance DECIMAL(38,2),
+    risk_profile ENUM('AGGRESSIVE','CONSERVATIVE','MODERATE'),
+    checking_account_id BINARY(16) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE investment (
+    investment_type VARCHAR(31) NOT NULL,
+    id BINARY(16) NOT NULL,
+    amount DECIMAL(38,2) NOT NULL,
+    current_value DECIMAL(38,2) NOT NULL,
+    start_date DATETIME(6) NOT NULL,
+    yield DECIMAL(38,2),
+    daily_interest_rate DECIMAL(38,2) NOT NULL,
+    fixed_income_type ENUM('CDB','DEBENTURE','LCA','LCI','TESOURO_DIRETO'),
+    tax_rate DECIMAL(38,2) NOT NULL,
+    purchase_price DECIMAL(38,2) NOT NULL,
+    ticker VARCHAR(10) NOT NULL,
+    investment_account_id BINARY(16) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE transaction (
+    id BINARY(16) NOT NULL,
+    amount DECIMAL(19,2) NOT NULL,
+    related_account_id BINARY(16),
+    timestamp DATETIME(6) NOT NULL,
+    transaction_type ENUM('DEPOSIT','REDEMPTION','TRANSFER_IN','TRANSFER_OUT','WITHDRAWAL') NOT NULL,
+    checking_account_id BINARY(16) NOT NULL,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+-- Índices e constraints
+
+-- Unicidade
+ALTER TABLE checking_account
+    ADD CONSTRAINT UK20hq2bw7dxyv3osb0kjbmdh4w UNIQUE (customer_id);
+
+ALTER TABLE investment_account
+    ADD CONSTRAINT UKsfb2pe402vxvf5dwbj6vbd87h UNIQUE (checking_account_id);
+
+-- Foreign Keys
+ALTER TABLE checking_account
+    ADD CONSTRAINT FKcqfcb2gjvoepur9qld1w9udmd
+    FOREIGN KEY (customer_id) REFERENCES customer (id);
+
+ALTER TABLE customer_document
+    ADD CONSTRAINT FK5146mcr0wlbs9a4lr0kx7uusr
+    FOREIGN KEY (customer_id) REFERENCES customer (id);
+
+ALTER TABLE investment_account
+    ADD CONSTRAINT FKk1n64esqcd4rp8d5blvoxvxxf
+    FOREIGN KEY (checking_account_id) REFERENCES checking_account (id);
+
+ALTER TABLE investment
+    ADD CONSTRAINT FKajev30kk9cqlk52auoj9ubady
+    FOREIGN KEY (investment_account_id) REFERENCES investment_account (id);
+
+ALTER TABLE transaction
+    ADD CONSTRAINT FKromcdy7t1rdnekf77vps90i3g
+    FOREIGN KEY (checking_account_id) REFERENCES checking_account (id);
